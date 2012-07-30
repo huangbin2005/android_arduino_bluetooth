@@ -1,0 +1,186 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+    <title>Cordova - BluetoothPlugin Sample</title>
+
+
+    <!--<link href="css/bootstrap.css" rel="stylesheet">-->
+    <!--<link href="css/bootstrap-responsive.css" rel="stylesheet">-->
+    <!--<link href="css/docs.css" rel="stylesheet">-->
+    <!--<link href="js/google-code-prettify/prettify.css" rel="stylesheet">-->
+    <!--<link type="text/css" href="css/ui-lightness/jquery-ui-1.8.21.custom.css" rel="stylesheet"/>-->
+
+
+    <link rel="stylesheet"  href="css/themes/default/jquery.mobile-1.1.1.css" />
+    <link rel="stylesheet" href="css/_assets/css/jqm-docs.css"/>
+
+
+    <!--<script type="text/javascript" charset="utf-8" src="js/jquery-1.7.2.min.js"></script>-->
+    <!--<script type="text/javascript" charset="utf-8" src="js/jquery-ui-1.8.21.custom.min.js"></script>-->
+    <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/jquery.mobile-1.1.1.js"></script>
+    <script src="css/_assets/js/jqm-docs.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="js/cordova-2.0.0.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/bluetooth.js"></script>
+
+
+    <script type="text/javascript" charset="utf-8">
+
+        var g_socketid = -1;
+        var g_bluetoothPlugin = null;
+
+        window.addEventListener('load', function () {
+            document.addEventListener('deviceready', function () {
+                g_bluetoothPlugin = cordova.require('cordova/plugin/bluetooth');
+                alert(bluetoothPlugin);
+            }, false);
+        }, false);
+
+        function enableBT() {
+            g_bluetoothPlugin.enable(function () {
+                alert('Enabling successfull');
+            }, function () {
+                alert('Error enabling BT: ' + error);
+            });
+        }
+
+        function disableBT() {
+            g_bluetoothPlugin.disable(function () {
+                alert('Disabling successfull');
+            }, function () {
+                alert('Error disabling BT: ' + error);
+            });
+        }
+
+        function discoverDevices() {
+            g_bluetoothPlugin.discoverDevices(function (devices) {
+                $('#bt-devices-select').html('');
+
+                for (var i = 0; i < devices.length; i++) {
+                    $('#bt-devices-select').append($('<option value="' + devices[i].address + '">' + devices[i].name + '</option>'));
+                }
+            }, function (error) {
+                alert('Error: ' + error);
+            });
+        }
+
+        function listUUIDs() {
+            g_bluetoothPlugin.getUUIDs(function (uuids) {
+                $('#bt-device-uuids').html('');
+
+                for (var i = 0; i < uuids.length; i++) {
+                    $('#bt-device-uuids').append($('<option value="' + uuids[i] + '">' + uuids[i] + '</option>'));
+                }
+            }, function (error) {
+                alert('Error: ' + error);
+            }, $('#bt-devices-select').val());
+        }
+
+        function openRfcomm() {
+            g_bluetoothPlugin.connect(function (socketId) {
+                g_socketid = socketId;
+                console.log('Socket-id: ' + g_socketid);
+            }, function (error) {
+                alert('Error: ' + error);
+            }, $('#bt-devices-select').val(), $('#bt-device-uuids').val());
+        }
+
+        function readRfcomm() {
+            g_bluetoothPlugin.read(bp_readSuccess, bp_readError, g_socketid);
+        }
+
+        function bp_readError(error) {
+            alert('Error: ' + error);
+        }
+
+        function bp_readSuccess(p_data) {
+            $('#bt-data-dump').html("");
+            $('#bt-data-dump').html(p_data);
+        }
+
+
+        function fixvalue(val) {
+            $("#amount").val(val);
+        }
+
+        function writefcommr() {
+            var content =$('#slider-1').val();
+            g_bluetoothPlugin.write(bp_writeSuccess, bp_writeError, g_socketid, content);
+
+        }
+        function writefcommg() {
+            var toggle =$('#flip-5').val();
+            g_bluetoothPlugin.write(bp_writeSuccess, bp_writeError, g_socketid, toggle);
+        }
+
+        function bp_writeSuccess(p_data) {
+//            alert('OK: '+p_data);
+            $('#bt-data-dump').html(""+p_data+"-->"+$('#bt-data-dump').html());
+//            $("#amount").val(p_data);
+
+        }
+
+        function bp_writeError(error) {
+            alert('error: ' + error);
+
+        }
+
+    </script>
+</head>
+
+<body>
+<button onclick="enableBT();">打开蓝牙</button>
+<button onclick="disableBT();">关闭蓝牙</button>
+<br/>
+<button onclick="discoverDevices();">查找蓝牙设备</button>
+<br/>
+<select id='bt-devices-select'>
+</select>
+<br/>
+<button id='bt-pair' onclick="listUUIDs();">List UUIDs</button>
+</p>
+<p>
+    <select id='bt-device-uuids'>
+    </select>
+    <br/>
+    <button class="btn" id='bt-connect' onclick="openRfcomm();">Connect</button>
+    <br/>
+    <button class="btn" onclick="readRfcomm();">Read</button>
+    <br/>
+
+    ===
+    <label for="amount">当前数值:</label>
+    <input type="text" id="amount" value="0" style="border:0; color:#f6931f; font-weight:bold;"/>
+<br/><br/><br/><br/>
+<div id="slider"></div>
+
+<label for="slider-1">Input slider:</label>
+<input type="range" name="slider-1" id="slider-1" value="0" min="0" max="255" />
+
+
+<br/>
+^^^
+<button class="btn" onclick="writefcommr();">红灯微调</button>
+<br/>
+
+
+<div id='bt-data-dump'></div>
+
+
+
+<div data-role="fieldcontain">
+    <label for="flip-5">Flip switch:</label>
+    <select name="flip-5" id="flip-5" data-role="slider" data-theme="c" data-track-theme="a">
+        <option value="v1">No</option>
+        <option value="v0">Yes</option>
+    </select>
+</div>
+
+<button class="btn" onclick="writefcommg();">绿灯开关</button>
+
+</body>
+</html>
