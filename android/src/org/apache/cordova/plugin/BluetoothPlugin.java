@@ -236,9 +236,7 @@ public class BluetoothPlugin extends Plugin {
                     os.write(temp);
                 }
                 os.flush();
-//                os.close();
                 InputStream inputStream = m_bluetoothSockets.get(socketId).getInputStream();
-
                 StringBuffer request = new StringBuffer(2048);
                 int i;
                 try {
@@ -305,7 +303,6 @@ public class BluetoothPlugin extends Plugin {
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice bluetoothDevice = intent
                         .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
                 try {
                     JSONObject deviceInfo = new JSONObject();
                     deviceInfo.put("name", bluetoothDevice.getName());
